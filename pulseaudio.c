@@ -43,7 +43,7 @@ static void context_success_cb(pa_context *ctx, int success, void *data)
 
 static void set_volume_cb(pa_context *ctx, const pa_sink_info *info, int is_last, void *data)
 {
-	double *new_vol = data;
+	double *passed = data;
 
 	if (is_last < 0) {
 		eputs("failed to get sink info\n");
@@ -55,7 +55,7 @@ static void set_volume_cb(pa_context *ctx, const pa_sink_info *info, int is_last
 		return;
 	}
 
-	pa_volume_t vol = (pa_volume_t)(*new_vol * PA_VOLUME_NORM);
+	pa_volume_t vol = (pa_volume_t)(*passed * PA_VOLUME_NORM);
 	pa_cvolume cv = info->volume;
 	pa_cvolume_scale(&cv, vol);
 
@@ -87,7 +87,7 @@ static void change_volume_cb(pa_context *ctx, const pa_sink_info *info, int is_l
 	pa_volume_t delta = (pa_volume_t)(*step * PA_VOLUME_NORM + 0.5);
 	pa_cvolume cv = info->volume;
 	if (action == ACTION_UP) {
-		pa_cvolume_inc(&cv, delta);
+		pa_cvolume_inc_clamp(&cv, delta, PA_VOLUME_NORM);
 	} else {
 		pa_cvolume_dec(&cv, delta);
 	}

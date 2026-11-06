@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -44,19 +45,24 @@ int main(int argc, char **argv)
 	}
 
 	void *data = NULL;
-	double percent = 0.0;
+	double vol = 0.0;
 	if (cmd->needs_arg) {
 		if (argc < 3) {
 			eprintf("%s: missing argument\n", argv[0]);
 			return EXIT_FAILURE;
 		}
 
-		if (!parse_percent(argv[2], &percent)) {
+		if (!parse_percent(argv[2], &vol)) {
 			eprintf("%s: invalid argument: %s\n", argv[0], argv[2]);
 			return EXIT_FAILURE;
 		}
 
-		data = &percent;
+		if (vol < 0 || vol > 1 || isnan(vol)) {
+			eprintf("%s: argument must be within the range of 0 to 100: %s\n", argv[0], argv[2]);
+			return EXIT_FAILURE;
+		}
+
+		data = &vol;
 	}
 
 	if (argc > 2 + cmd->needs_arg) {
